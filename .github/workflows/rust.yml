@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4.1.1
+
+    # We don't have any tests for now
+    # - name: Run tests
+    #   run: cargo test --verbose
+
+    - name: Build
+      run: cargo build --verbose --release --target=i686-pc-windows-msvc
+
+    - name: Prepare artifact
+      shell: pwsh
+      run: |
+        Move-Item 'target/i686-pc-windows-msvc/release/runtime_patcher.dll' -Destination 'artifact/runtime_patcher.asi' -Force
+        Move-Item 'runtime_patcher.conf' -Destination 'artifact/runtime_patcher.conf' -Force
+
+    - name: Archive Build
+      uses: actions/upload-artifact@v4.3.0
+      with:
+        name: runtime-patcher-asi
+        path: artifact
