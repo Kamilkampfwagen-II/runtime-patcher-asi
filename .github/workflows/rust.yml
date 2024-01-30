@@ -27,8 +27,9 @@ jobs:
     - name: Prepare artifact
       shell: pwsh
       run: |
-        Move-Item 'target/i686-pc-windows-msvc/release/runtime_patcher.dll' -Destination 'artifact/runtime_patcher.asi' -Force
-        Move-Item 'runtime_patcher.conf' -Destination 'artifact/runtime_patcher.conf' -Force
+        New-Item -ItemType Directory -Path 'artifact'
+        Move-Item 'target/i686-pc-windows-msvc/release/runtime_patcher.dll' -Destination 'artifact/runtime_patcher.asi'
+        Move-Item 'runtime_patcher.conf' -Destination 'artifact/runtime_patcher.conf'
 
     - name: Archive Build
       uses: actions/upload-artifact@v4.3.0
