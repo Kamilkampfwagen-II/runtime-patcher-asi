@@ -1,9 +1,8 @@
 mod patch;
-use patch::patch::PatchSet;
 use patch::i337;
 
 mod helper;
-use helper::helper::*;
+use helper::*;
 
 mod config;
 use config::conf;
@@ -42,21 +41,20 @@ fn main() {
         let path = entry.unwrap().path(); // Why would this fail?
 
         if !path.is_file() || path.extension().unwrap_or_default() != "1337" { continue; }
-        let content = fs::read_to_string(&path).expect(&format!("ERROR - Failed to read file: {}", &path.to_str().unwrap()));
+        let content = fs::read_to_string(&path).unwrap_or_else(|_| panic!("ERROR - Failed to read file: {}", &path.to_str().unwrap()));
 
         println!("INFO - Applying patch: {:?}", path.file_stem().unwrap_or(OsStr::new("")));
-        let patchset: PatchSet;
         let result = i337::parse(&content);
-        match result {
-            Ok(value) => patchset = value,
+        let patchset = match result {
+            Ok(value) => value,
             Err(err) => { println!("ERROR - {}", err); continue; }
-        }
+        };
 
         let result = apply_patchset(patchset);
         match result {
             Ok(_) => continue,
             Err(err) => { println!("ERROR - Failed to apply patch: {}", err); continue; }
-        }
+        };
     }
 }
 
@@ -71,23 +69,23 @@ extern "system" fn DllMain(
     match call_reason {
         DLL_PROCESS_ATTACH => {
             main();
-            return BOOL(1)
+            BOOL(1)
         }
 
         DLL_PROCESS_DETACH => {
-            return BOOL(1)
+            BOOL(1)
         }
 
         DLL_THREAD_ATTACH => {
-            return BOOL(1)
+            BOOL(1)
         }
 
         DLL_THREAD_DETACH => {
-            return BOOL(1)
+            BOOL(1)
         }
 
         _ => {
-            return BOOL(1)
+            BOOL(1)
         }
     }
 }
