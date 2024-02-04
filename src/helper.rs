@@ -65,13 +65,15 @@ pub fn apply_patchset(patchset: PatchSet) -> Result<(), Box<dyn Error>> {
 
     for patch in patchset.set.iter() {
         let target_byte = unsafe { read_from::<u8>(base_address + patch.offset) };
-        if target_byte != patch.org {
-            return Err(Box::new(PatchError::ByteMismatch(
-                patch.offset,
-                patch.org,
-                target_byte,
-            )));
+        if target_byte == patch.org {
+            continue;
         }
+
+        return Err(Box::new(PatchError::ByteMismatch(
+            patch.offset,
+            patch.org,
+            target_byte,
+        )));
     }
 
     for patch in patchset.set.iter() {
