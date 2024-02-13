@@ -1,4 +1,4 @@
-use crate::patch::*;
+use crate::patch::{self, *};
 
 use std::error::Error;
 use std::ffi::{c_void, OsStr};
@@ -12,7 +12,7 @@ use windows::Win32::System::Memory::{
     VirtualProtect, PAGE_EXECUTE_READWRITE, PAGE_PROTECTION_FLAGS,
 };
 
-pub unsafe fn write_to<T>(address: u32, value: T) -> Result<(), core::Error>
+pub unsafe fn write_to<T>(address: u32, value: T) -> core::Result<()>
 where
     T: Copy,
 {
@@ -52,16 +52,16 @@ where
 }
 
 // I asked ChatGPT to simplify my version (a match statement), this is what I got.
-pub fn get_address_by_offset(module: Option<&str>, offset: u32) -> Result<u32, core::Error> {
+pub fn get_module_address(module: Option<&str>) -> core::Result<u32> {
     let module_name: Option<Vec<u16>> =
         module.map(|value| OsStr::new(value).encode_wide().chain(Some(0)).collect());
     let ptr = module_name.as_ref().map_or(null(), |v| v.as_ptr());
 
-    Ok(unsafe { GetModuleHandleW(PCWSTR(ptr))? }.0 as u32 + offset)
+    Ok(unsafe { GetModuleHandleW(PCWSTR(ptr))? }.0 as u32)
 }
 
 pub fn apply_patchset(patchset: PatchSet) -> Result<(), Box<dyn Error>> {
-    let base_address = get_address_by_offset(Some(&patchset.module), 0)?;
+    let base_address = get_module_address(Some(&patchset.module))?;
 
     for patch in patchset.set.iter() {
         let target_byte = unsafe { read_from::<u8>(base_address + patch.offset) };
@@ -69,7 +69,7 @@ pub fn apply_patchset(patchset: PatchSet) -> Result<(), Box<dyn Error>> {
             continue;
         }
 
-        return Err(Box::new(PatchError::ByteMismatch(
+        return Err(Box::new(patch::Error::ByteMismatch(
             patch.offset,
             patch.org,
             target_byte,

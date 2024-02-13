@@ -1,4 +1,4 @@
-use std::{error::Error, fmt};
+use std::fmt;
 
 pub struct Patch {
     pub offset: u32,
@@ -12,18 +12,18 @@ pub struct PatchSet {
 }
 
 #[derive(Debug)]
-pub enum PatchError {
+pub enum Error {
     ByteMismatch(u32, u8, u8),
 }
 
-impl fmt::Display for PatchError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            PatchError::ByteMismatch(offset, expected, found) => write!(f, "Byte {:#x} at target offset {:#x} does not match the original byte {:#x} in the patch.", found, offset, expected)
+            Error::ByteMismatch(offset, expected, found) => write!(f, "Byte {:#x} at target offset {:#x} does not match the original byte {:#x} in the patch.", found, offset, expected)
         }
     }
 }
-impl Error for PatchError {}
+impl std::error::Error for Error {}
 
 pub mod i337 {
     use std::error::Error;
