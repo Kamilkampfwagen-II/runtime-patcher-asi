@@ -1,11 +1,13 @@
 use std::fmt;
 
+#[derive(Debug)]
 pub struct Patch {
     pub offset: u32,
     pub org: u8,
     pub new: u8,
 }
 
+#[derive(Debug)]
 pub struct PatchSet {
     pub module: String,
     pub set: Vec<Patch>,
