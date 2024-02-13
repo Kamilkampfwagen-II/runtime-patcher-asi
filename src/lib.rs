@@ -56,7 +56,7 @@ fn main() {
         let patchset = match result {
             Ok(value) => value,
             Err(err) => {
-                println!("ERROR - {}", err);
+                println!("ERROR - {:?}", err);
                 continue;
             }
         };

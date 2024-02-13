@@ -26,47 +26,39 @@ impl fmt::Display for Error {
 impl std::error::Error for Error {}
 
 pub mod i337 {
-    use std::error::Error;
+    use regex::Regex;
+    use std::num::ParseIntError;
 
     use super::{Patch, PatchSet};
 
-    pub fn parse(content: &str) -> Result<PatchSet, Box<dyn Error>> {
+    #[derive(Debug)]
+    pub enum Error {
+        MissingModuleName,
+        MissingEntry,
+        OffsetParseError(ParseIntError),
+        OriginalByteParseError(ParseIntError),
+        NewByteParseError(ParseIntError),
+    }
+
+    pub fn parse(content: &str) -> Result<PatchSet, Error> {
         let lines: Vec<&str> = content.lines().collect();
-        let first_line = *lines
-            .first()
-            .ok_or("Not a valid 1337, module name was not found.")?;
+        let first_line = *lines.first().ok_or(Error::MissingModuleName)?;
         let module = first_line[1..].to_owned();
 
         let mut patches: Vec<Patch> = vec![];
+        let regex = Regex::new(r"^(.*):(.*)->(.*)$").unwrap();
 
         for line in &lines[1..] {
-            let split_colon: Vec<&str> = line.split(':').collect();
-            let split_arrow: Vec<&str> = split_colon
-                .get(1)
-                .ok_or("Not a valid 1337, no entry was found.")?
-                .split("->")
-                .collect();
+            if let Some(caps) = regex.captures(line) {
+                let offset = u32::from_str_radix(&caps[1], 16).map_err(Error::OffsetParseError)?;
+                let org =
+                    u8::from_str_radix(&caps[2], 16).map_err(Error::OriginalByteParseError)?;
+                let new = u8::from_str_radix(&caps[3], 16).map_err(Error::NewByteParseError)?;
 
-            let offset = u32::from_str_radix(
-                split_colon
-                    .first()
-                    .ok_or("Not a valid 1337, failed to parse the offset.")?,
-                16,
-            )?;
-            let org = u8::from_str_radix(
-                split_arrow
-                    .first()
-                    .ok_or("Not a valid 1337, failed to parse the original byte.")?,
-                16,
-            )?;
-            let new = u8::from_str_radix(
-                split_arrow
-                    .get(1)
-                    .ok_or("Not a valid 1337, failed to parse the new byte.")?,
-                16,
-            )?;
-
-            patches.push(Patch { offset, org, new })
+                patches.push(Patch { offset, org, new });
+            } else {
+                return Err(Error::MissingEntry);
+            }
         }
 
         Ok(PatchSet {

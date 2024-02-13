@@ -10,6 +10,7 @@ name = "runtime_patcher"
 crate-type = ["cdylib"]
 
 [dependencies]
+regex = "1.10.3"
 rust-ini = "0.20.0"
 
 [dependencies.windows]
