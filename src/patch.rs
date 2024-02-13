@@ -41,14 +41,13 @@ pub mod i337 {
     }
 
     pub fn parse(content: &str) -> Result<PatchSet, Error> {
-        let lines: Vec<&str> = content.lines().collect();
-        let first_line = *lines.first().ok_or(Error::MissingModuleName)?;
+        let first_line = content.lines().next().ok_or(Error::MissingModuleName)?;
         let module = first_line[1..].to_owned();
 
         let mut patches: Vec<Patch> = vec![];
         let regex = Regex::new(r"^(.*):(.*)->(.*)$").unwrap();
 
-        for line in &lines[1..] {
+        for line in content.lines().skip(1) {
             if let Some(caps) = regex.captures(line) {
                 let offset = u32::from_str_radix(&caps[1], 16).map_err(Error::OffsetParseError)?;
                 let org =
