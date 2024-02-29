@@ -23,11 +23,11 @@ fn main() {
     let config = conf::read_safe(Path::new("runtime_patcher.conf"));
 
     // Attach a console so we can print stuff
-    if config.get("console").unwrap().unwrap() {
+    if config["console"].unwrap() {
         let _ = unsafe { AllocConsole() };
     }
 
-    let patch_dir: String = config.get("patches_directory").unwrap().unwrap();
+    let patch_dir: String = config["patches_directory"].unwrap();
 
     let entries: ReadDir;
     let result = fs::read_dir(&patch_dir);
