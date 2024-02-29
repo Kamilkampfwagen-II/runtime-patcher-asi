@@ -69,7 +69,7 @@ pub mod conf {
     pub fn read_safe(file: &Path) -> HashMap<String, Value> {
         let default_config = HashMap::from([
             ("console", Value::Bool(true)),
-            ("patches_directory", Value::String("patches".to_owned())),
+            ("directory", Value::String("patches".to_owned())),
         ]);
 
         let binding = ini::Properties::default();

@@ -27,7 +27,7 @@ fn main() {
         let _ = unsafe { AllocConsole() };
     }
 
-    let patch_dir: String = config["patches_directory"].unwrap();
+    let patch_dir: String = config["directory"].unwrap();
 
     let entries: ReadDir;
     let result = fs::read_dir(&patch_dir);
